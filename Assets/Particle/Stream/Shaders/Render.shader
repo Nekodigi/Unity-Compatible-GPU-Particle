@@ -24,6 +24,8 @@ Shader "GPU_Particle/Render"
 	half4 _Color;
 	half _Tail;
 
+	int _limit;
+
 	struct appdata
 	{
 		float4 position : POSITION;
@@ -54,25 +56,30 @@ Shader "GPU_Particle/Render"
 		else if (id % 4 == 3) {
 			q = float3(-0.5f, -0.5f, 0);
 		}*/
-		int id = v.position.x;
+		int tag = v.position.x;
 		float3 q = float3(0, 0, 0);//when -1
-		if (id == 0) {
+		if (tag == 0) {
 			q = float3(-0.5, -0.5, 0);
 		}
-		else if (id == 1) {
+		else if (tag == 1) {
 			q = float3(0.5f, -0.5f, 0);
 		}
-		else if (id == 2) {
+		else if (tag == 2) {
 			q = float3(0.5f, 0.5f, 0);
 		}
-		else if (id == 3) {
+		else if (tag == 3) {
 			q = float3(-0.5f, 0.5f, 0);
 		}
 
 		//float y = floor(inst / _pPos_TexelSize.z);
 		//float2 uv = float2(frac(inst / _pPos_TexelSize.z), y / _pPos_TexelSize.w);
-		float2 uv = v.texcoord.xy + _pPos_TexelSize.xy / 2 + float2(0, _offset);
-		
+		float2 ts = _pPos_TexelSize;
+		float2 coord = v.texcoord;
+		float2 uv = coord.xy + ts.xy / 2 + float2(0, _offset);
+		int id = coord.x / ts.x + (coord.y+_offset) / ts.y / ts.x;
+		if (id >= _limit) {
+			q = float3(0, 0, 0);//don't show when out of limit.
+		}
 
 		float4 pP = tex2Dlod(_pPos, float4(uv, 0, 0));
 		float4 pC = tex2Dlod(_pCol, float4(uv, 0, 0));

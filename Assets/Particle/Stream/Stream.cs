@@ -296,6 +296,7 @@ namespace Kvant
             _pMaterial.SetTexture("_pVel", pVel[WRITE]);
             _pMaterial.SetTexture("_pCol", pCol[WRITE]);
             _pMaterial.SetTexture("_pSca", pSca[WRITE]);
+            _pMaterial.SetInt("_limit", _maxParticles);
             //_pMaterial.SetPass(0);
             _pMaterial.SetFloat("_offset", 0.0f);
             for (int i = 0; i < numMeshes; i++) {
@@ -310,10 +311,9 @@ namespace Kvant
         Mesh CreateMesh()
         {
             var Nx = BufferWidth;
-            int maxHeight = Mathf.CeilToInt(65000.0f/ BufferWidth);
+            int maxHeight = Mathf.Min(Mathf.CeilToInt(65000.0f/ BufferWidth), 8192);//8 when bufferwidth=8192
             var Ny = Mathf.Min(BufferHeight, maxHeight);
             meshHeight = Ny;
-            Debug.Log("NY"+ BufferHeight + "MH"+maxHeight);
             numMeshes = Mathf.CeilToInt((float)BufferHeight / maxHeight);
 
             // Create vertex arrays.
@@ -326,17 +326,10 @@ namespace Kvant
             {
                 for (var y = 0; y < Ny; y++)
                 {
-                    if (Ai/4 >= _maxParticles)//NOT WORKING NOW fix if you want
-                    {
-                        VA[Ai + 0] = VA[Ai + 1] = VA[Ai + 2] = VA[Ai + 3] = new Vector3(-1, 0, 0);
-                    }
-                    else
-                    {
-                        VA[Ai + 0] = new Vector3(0, 0, 0);
-                        VA[Ai + 1] = new Vector3(1, 0, 0);
-                        VA[Ai + 2] = new Vector3(2, 0, 0);
-                        VA[Ai + 3] = new Vector3(3, 0, 0);
-                    }
+                    VA[Ai + 0] = new Vector3(0, 0, 0);
+                    VA[Ai + 1] = new Vector3(1, 0, 0);
+                    VA[Ai + 2] = new Vector3(2, 0, 0);
+                    VA[Ai + 3] = new Vector3(3, 0, 0);
 
                     var u = (float)x / Nx;
                     var v = (float)y / Ny;
